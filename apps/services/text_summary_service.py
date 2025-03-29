@@ -2,7 +2,7 @@
 from ..llama.llama_worker import LlamaWorker
 
 class TextSummaryService:
-    def __init__(self, model_name="gemma2:2b"):
+    def __init__(self, model_name="stablelm-zephyr:3b"):
         self.worker = LlamaWorker(model_name)
 
     def summarize_text(self, text):

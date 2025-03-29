@@ -1,5 +1,7 @@
 # Created by guxu at 9/12/24
 import os.path
+import uuid
+
 import ffmpeg
 
 
@@ -26,6 +28,9 @@ def write_output(path, content):
 
 def visualize_audio(audio_path):
     pass
+
+def gen_id():
+    return str(uuid.uuid4())
 
 if __name__ == '__main__':
     input_path = "../data/video/demo.webm"

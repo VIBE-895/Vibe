@@ -23,6 +23,8 @@ unstructured_pytesseract
 pdfminer.six
 pi_heif
 chromadb
+rapidocr-onnxruntime
 
 flask
 flask_cors
+pytest
