@@ -28,3 +28,4 @@ rapidocr-onnxruntime
 flask
 flask_cors
 pytest
+faiss-cpu

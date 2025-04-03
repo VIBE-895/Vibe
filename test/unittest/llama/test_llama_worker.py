@@ -47,3 +47,11 @@ def test_extract_query():
     llama_worker.load_text(text)
     questions = llama_worker.extract_query()
     print(questions)
+
+def test_summarize_with_rag():
+    text = "I want to make good preparations for interviewing with Meta. I learn some tips for Meta's interview"
+    llama_worker.load_text(text)
+    pdf_path = os.path.join(PROJECT_BASE_PATH, 'test', 'data', 'pdf', 'meta_BQ_preparation.pdf')
+    llama_worker.load_pdf(pdf_path)
+    summary = llama_worker.summarize_with_rag()
+    print(summary)

@@ -88,3 +88,31 @@ def get_extract_query_prompt():
         """,
         input_variables = ["text"]
     )
+
+def get_stuffing_rag_prompt():
+    return PromptTemplate(
+        template= """
+        You are a summarization assistant. Read the following text carefully and output a structured summary in JSON format.
+
+        Your task has four parts:
+        1. Identify the setting — describe the type of situation (e.g., a course, meeting, or conversation). Use clear clues from the text to make a reasonable guess, but do not invent specific details.
+        2. Determine the topic — write a short phrase summarizing the main subject of the document.
+        3. Extract key terms — choose 3 to 8 important keywords or phrases that represent the core content.
+        4. Write a combined summary — merge the summaries into a complete and well-structured paragraph, avoiding redundancy and preserving all important information.
+
+        Rules:
+        - Use complete sentences in the summary.
+        - Avoid speculation or vague language.
+        - The output must be a valid JSON object:
+
+        Here is the text:
+
+        {text}
+        
+        Here's some additional information that you may need to improve your answer, but don't include them in the output if you don't need them.
+        
+        {supportive_information}
+        
+        """,
+        input_variables=["text", "supportive_information"]
+    )

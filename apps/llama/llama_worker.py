@@ -1,11 +1,13 @@
 import os.path
 
-from models.llm_ouput import QuestionsForRAG
-from .. import PROJECT_BASE_PATH
-from ..models.llm_ouput import Summary, ChunkSummary
-from .make_prompt import get_summarize_chunk_prompt, get_combine_chunk_prompt, get_stuffing_prompt, get_extract_query_prompt
+from langchain_community.vectorstores import FAISS
+from langchain_core.runnables import RunnableMap, RunnableLambda
+from langchain_ollama import OllamaEmbeddings
 
-from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
+from models.llm_ouput import QuestionsForRAG
+from ..models.llm_ouput import Summary, ChunkSummary
+from .make_prompt import *
+
 from langchain_ollama.llms import OllamaLLM
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
@@ -24,11 +26,13 @@ class LlamaWorker:
         Parameters:
         - model_name (str): The name of the Llama model.
         """
+        self.retriever = None
         self.model_name = model_name
+        self.embedding_model = "nomic-embed-text"
         # Initialize the Ollama LLM
         self.llm = OllamaLLM(
             model=self.model_name,
-            num_threads=8,
+            num_thread=8,
             temperature=0
         )
         self.documents = []
@@ -56,7 +60,7 @@ class LlamaWorker:
             loader = PyPDFLoader(pdf_path, extract_images=True)
             pdf_documents = loader.load()
             logging.info("PDF documents: ", pdf_documents)
-            self.documents.extend(pdf_documents)
+            self.supportive_documents.extend(pdf_documents)
         except Exception as e:
             logging.error(f"Error loading PDF document: {e}")
 
@@ -73,7 +77,7 @@ class LlamaWorker:
             loader = UnstructuredImageLoader(image_path)
             data = loader.load()
             logging.info("Image data: ", data)
-            self.documents.extend(data)
+            self.supportive_documents.extend(data)
         except Exception as e:
             logging.error(f"Error loading image: {e}")
 
@@ -114,7 +118,23 @@ class LlamaWorker:
         combined_summary = combine_chain.invoke({"text": final_key_info})
         return combined_summary
 
-    def summarize(self, map_reduce=False):
+    def format_docs(self, docs):
+        return "\n\n".join([d.page_content for d in docs])
+
+    def summarize_with_rag(self):
+        prompt = get_stuffing_rag_prompt()
+        self.build_retriever()
+        self.llm.format = Summary.model_json_schema()
+
+        chain = RunnableMap({
+            "supportive_information": (lambda x: x["text"]) | RunnableLambda(self.format_docs) | self.retriever | self.format_docs,
+            "text": lambda x: x["text"],
+        }) | prompt | self.llm | JsonOutputParser()
+
+        summary_rag = chain.invoke({"text": self.documents})
+        return summary_rag
+
+    def summarize(self, map_reduce=False, rag=False):
         """
         Extract key information, knowledge points, key tasks, and time points from the documents.
 
@@ -135,21 +155,15 @@ class LlamaWorker:
         questions = chain.invoke({"text": self.documents})
         return questions
 
-    # Placeholder methods for future integration with tarily and ChromaDB
-    def set_vector_store(self, vector_store):
-        """
-        Set the vector store for Retrieval Augmented Generation (RAG).
+    def build_retriever(self):
+        if not self.supportive_documents:
+            raise ValueError("No supportive documents loaded.")
 
-        Parameters:
-        - vector_store: The vector store instance (e.g., ChromaDB).
-        """
-        self.vector_store = vector_store
+        splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+        split_docs = splitter.split_documents(self.supportive_documents)
 
-    def set_retrieval_augmentation(self, retriever):
-        """
-        Set the retriever for RAG.
-
-        Parameters:
-        - retriever: The retriever instance.
-        """
+        embedding_model = OllamaEmbeddings(model=self.embedding_model)
+        vector_store = FAISS.from_documents(split_docs, embedding_model)
+        retriever = vector_store.as_retriever(search_kwargs={"k": 5})
         self.retriever = retriever
+
