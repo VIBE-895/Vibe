@@ -116,3 +116,19 @@ def get_stuffing_rag_prompt():
         """,
         input_variables=["text", "supportive_information"]
     )
+
+def get_query_prompt():
+    return PromptTemplate(
+        template="""
+        You are an AI assistant. Your job is to answer the user's question based only on the provided supportive information.
+
+        Question:
+        {query}
+
+        Supportive Information:
+        {supportive_information}
+
+        Your summary should be formatted as a JSON object.
+        """,
+        input_variables=["query", "supportive_information"]
+    )

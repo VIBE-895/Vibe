@@ -113,7 +113,7 @@ class SpeechToTextExperiment:
 
         # 显示图形
         plt.tight_layout()
-        plt.savefig(f"../data/figure/{title}.png")
+        plt.savefig(f"{title}.png")
 
     @staticmethod
     def mul_vs_en_plot_results(csv_file, m, metric="WER"):
@@ -151,7 +151,7 @@ class SpeechToTextExperiment:
 
         # 显示图形
         plt.tight_layout()
-        plt.savefig(f"../data/figure/{title}.png")
+        plt.savefig(f"{title}.png")
 
     def save_result(self, result):
         """
@@ -176,6 +176,6 @@ class SpeechToTextExperiment:
 # SpeechToTextExperiment.different_model_plot_results('results.csv', "execution_time", True)
 for model in ['tiny', 'base', 'small']:
     for metric in ["WER", "execution_time"]:
-        SpeechToTextExperiment.mul_vs_en_plot_results("results.csv", model, metric)
+        SpeechToTextExperiment.different_model_plot_results("results.csv", metric)
 
 

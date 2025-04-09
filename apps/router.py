@@ -85,10 +85,3 @@ def upload():
     except Exception as e:
         logging.error(f"Error uploading file: {e}")
         return jsonify({"error": str(e)}), 500
-
-# @app.route('summarize/v2', methods=['POST'])
-# def summarizeV2():
-#     try:
-#         file_path = request.form.get('file_path')
-#         text_summary_service = TextSummaryService()
-#         summary = text_summary_service.summarize_text(file_path)

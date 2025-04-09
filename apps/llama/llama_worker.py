@@ -1,11 +1,12 @@
 import os.path
 
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS, Chroma
 from langchain_core.runnables import RunnableMap, RunnableLambda
 from langchain_ollama import OllamaEmbeddings
 
 from models.llm_ouput import QuestionsForRAG
-from ..models.llm_ouput import Summary, ChunkSummary
+from ..models.llm_ouput import Summary, ChunkSummary, QueryAnswer
+from ..knowledgebase.knowledge import Knowledge
 from .make_prompt import *
 
 from langchain_ollama.llms import OllamaLLM
@@ -35,6 +36,7 @@ class LlamaWorker:
             num_thread=8,
             temperature=0
         )
+        self.knowledge_base = Knowledge("summaries", "my_summaries")
         self.documents = []
         self.supportive_documents = []
 
@@ -144,9 +146,12 @@ class LlamaWorker:
         if not self.documents:
             return "No documents to extract information from."
 
-        if map_reduce:
-            return self.summarize_with_map_reduce()
-        return self.summarize_with_stuffing()
+        if rag:
+            summary = self.summarize_with_rag()
+        else:
+            summary = self.summarize_with_map_reduce() if map_reduce else self.summarize_with_stuffing()
+        self.add_summary_to_knowledge(summary)
+        return summary
 
     def extract_query(self):
         propmt = get_extract_query_prompt()
@@ -167,3 +172,25 @@ class LlamaWorker:
         retriever = vector_store.as_retriever(search_kwargs={"k": 5})
         self.retriever = retriever
 
+    def add_summary_to_knowledge(self, summary):
+        if isinstance(summary, dict):
+            # convert to string
+            summary = str(summary)
+        self.knowledge_base.add([summary])
+
+    def query_knowledge_base(self, query):
+        return self.knowledge_base.query(query, top_k=5)
+
+    def search_and_answer(self, query):
+        supportive_information = self.query_knowledge_base(query)
+        if not supportive_information:
+            return "No related information found."
+        prompt = get_query_prompt()
+        self.llm.format = QueryAnswer.model_json_schema()
+        chain = prompt | self.llm | JsonOutputParser()
+        print(type(chain))
+        answer = chain.invoke({
+            "query": query,
+            "supportive_information": supportive_information
+        })
+        return answer

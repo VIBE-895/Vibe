@@ -1,8 +1,10 @@
 # Created by guxu at 3/27/25
+import shutil
 
 from apps.llama.llama_worker import LlamaWorker
 from apps import PROJECT_BASE_PATH
 import os
+import logging
 
 MODEL_NAME = 'stablelm-zephyr:3b'
 llama_worker = LlamaWorker(MODEL_NAME)
@@ -36,6 +38,7 @@ def test_load_image():
 def test_summarize_stuffing():
     llama_worker.load_text(text)
     summary = llama_worker.summarize()
+    print(type(summary))
     print(summary)
 
 def test_summarize_map_reduce():
@@ -55,3 +58,62 @@ def test_summarize_with_rag():
     llama_worker.load_pdf(pdf_path)
     summary = llama_worker.summarize_with_rag()
     print(summary)
+
+def test_search_and_answer():
+    to_search = """
+    To summarize long texts effectively using LLMs, break the text into smaller chunks, summarize each chunk, and then combine those summaries, possibly iteratively, until a final, concise summary is achieved. 
+    Here's a more detailed explanation:
+    1. Chunking the Text:
+    Divide and Conquer: The first step is to divide the long text into smaller, manageable chunks that fit within the LLM's context window (the maximum amount of text the model can process at once). 
+    Chunking Strategies:
+    By Sections: If the text has natural sections (e.g., chapters, paragraphs), you can use those as chunk boundaries. 
+    Character-Based: If there are no clear sections, you can divide the text into equal-sized chunks based on character count. 
+    Overlap: To avoid losing context between chunks, consider overlapping chunks (where the last few characters of one chunk are repeated at the beginning of the next). 
+    Tools: Libraries like LangChain offer tools for text splitting and chunking. 
+    2. Summarizing Each Chunk:
+    LLM Input:
+    Feed each chunk of text to the LLM, along with a prompt instructing it to generate a concise summary.
+    Prompt Engineering:
+    Tailor the prompt to the specific task and desired output format (e.g., a few sentences, bullet points). 
+    3. Combining Summaries:
+    Iterative Summarization:
+    Summarize the summaries of the chunks, repeating this process until you achieve a final summary that is both concise and informative. 
+    MapReduce Approach:
+    This strategy involves summarizing each chunk independently (the "map" phase) and then combining these summaries (the "reduce" phase). 
+    Refine Strategy:
+    Another approach is to iteratively refine the summary by feeding the current summary and the next chunk to the LLM, asking it to generate a refined summary. 
+    4. Tools and Libraries:
+    LangChain:
+    LangChain is a popular framework for developing LLM applications and offers tools for text summarization, including chunking and summarization strategies. 
+    Other Libraries:
+    Other libraries and tools can also be used for LLM summarization, such as those that integrate with specific LLM models or APIs. 
+    Text Summarization of Large Documents using LangChain - GitHub
+    Overview. Text summarization is an NLP task that creates a concise and informative summary of a longer text. LLMs can be used to c...
+
+    GitHub
+    How to use LLMs: Summarize long documents - DEV Community
+    May 1, 2024 — Luckily, there exists a technique that can get an LLM to summarize a document longer than its context window size. The ...
+
+    DEV Community
+    Summarize Large Documents or Text Using LLMs and ...
+    Jul 16, 2024 — Summarize Large Documents or Text Using LLMs and LangChain. ... If the entire text fits within the LLM's context windo...
+
+    Medium · 
+    Ranjeet Tiwari | Senior Architect - AI | IITJ
+    Show all
+    Generative AI is experimental. For legal advice, consult a professional.
+    """
+    client_path = os.path.join(PROJECT_BASE_PATH, 'test', 'unittest', 'knowledgebase', 'persistent_clients')
+    os.makedirs(client_path, exist_ok=True)
+    from apps.knowledgebase.knowledge import Knowledge
+    knowledge = Knowledge("test_path", "test")
+    knowledge.add([to_search])
+    llama_worker.knowledge_base = knowledge
+    res = llama_worker.search_and_answer("How can I summarize long text with llm?")
+    print(res)
+
+
+    if os.path.exists(client_path):
+        shutil.rmtree(client_path)
+
+

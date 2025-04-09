@@ -14,3 +14,6 @@ class ChunkSummary(BaseModel):
 
 class QuestionsForRAG(BaseModel):
     questions: List[str]
+
+class QueryAnswer(BaseModel):
+    answer: str
