@@ -6,6 +6,9 @@ Vibe is an AI-powered application designed to help users capture and summarize k
 ## Technical Architecture
 ![img.png](docs/architecture.png)
 
+## Text Summarization Architecture
+![img.png](docs/text_summarization_workflow.png)
+
 ## How to run the application
 1. Download the dependencies
 ```shell
