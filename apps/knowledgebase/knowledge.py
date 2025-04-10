@@ -7,7 +7,7 @@ from typing import List
 from .. import PROJECT_BASE_PATH
 from ..utils.utils import gen_id
 
-DATABASE_PATH = os.path.join(PROJECT_BASE_PATH, 'persistent_clients')
+DATABASE_PATH = os.path.join(PROJECT_BASE_PATH,  'persistent_clients')
 
 
 class Knowledge():
@@ -40,6 +40,7 @@ class Knowledge():
             n_results=top_k,
             # where_document={"$contains": fitness_type}
         )
-        return result["documents"][0]
+        formatted_result = [(doc_id, doc) for doc_id, doc in zip(result["ids"][0], result["documents"][0])]
+        return formatted_result
 
 

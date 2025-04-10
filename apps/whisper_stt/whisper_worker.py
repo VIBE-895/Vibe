@@ -50,7 +50,7 @@ class WhisperWorker:
         chunk_path_map = {}
         for i, chunk in enumerate(chunks):
             # Create a path for the chunk in the specified output directory
-            chunk_path = os.path.join(self.output_dir, "temp", f"temp_chunk_{i}.wav")
+            chunk_path = os.path.join(self.output_dir, f"temp_chunk_{i}.wav")
             chunk.export(chunk_path, format="wav")
             chunk_path_map[chunk_path] = chunk
 
@@ -78,7 +78,7 @@ class WhisperWorker:
         size = len(transcriptions)
 
         for i in range(size):
-            chunk_path = os.path.join(self.output_dir, "temp", f"temp_chunk_{i}.wav")
+            chunk_path = os.path.join(self.output_dir, f"temp_chunk_{i}.wav")
             combined.append(transcriptions[chunk_path])
 
         # Return the combined transcription as a single string

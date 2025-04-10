@@ -8,3 +8,7 @@ class TextSummaryService:
     def summarize_text(self, text):
         self.worker.load_text(text)
         return self.worker.summarize()
+
+    def intelligent_query(self, query):
+        supportive_doc, answer = self.worker.search_and_answer(query)
+        return supportive_doc, answer

@@ -85,3 +85,19 @@ def upload():
     except Exception as e:
         logging.error(f"Error uploading file: {e}")
         return jsonify({"error": str(e)}), 500
+
+@app.route('/query', methods=['POST'])
+def query():
+    try:
+        text_summary_service = TextSummaryService()
+        data = request.get_json()
+        query = data["query"]
+        logging.info(f"Query: {query}")
+        if not query:
+            return jsonify({"error": "Missing query"}), 400
+        supportive_doc, result = text_summary_service.intelligent_query(query)
+        return jsonify({"supportive_documents": supportive_doc, "result": result}), 200
+    except Exception as e:
+        logging.error(f"Error query: {e}")
+        return jsonify({"error": str(e)}), 500
+

@@ -4,7 +4,7 @@ from langchain_community.vectorstores import FAISS, Chroma
 from langchain_core.runnables import RunnableMap, RunnableLambda
 from langchain_ollama import OllamaEmbeddings
 
-from models.llm_ouput import QuestionsForRAG
+from ..models.llm_ouput import QuestionsForRAG
 from ..models.llm_ouput import Summary, ChunkSummary, QueryAnswer
 from ..knowledgebase.knowledge import Knowledge
 from .make_prompt import *
@@ -183,14 +183,14 @@ class LlamaWorker:
 
     def search_and_answer(self, query):
         supportive_information = self.query_knowledge_base(query)
+        info_string = "\n\n".join([doc[1] for doc in supportive_information])
         if not supportive_information:
             return "No related information found."
         prompt = get_query_prompt()
         self.llm.format = QueryAnswer.model_json_schema()
         chain = prompt | self.llm | JsonOutputParser()
-        print(type(chain))
         answer = chain.invoke({
             "query": query,
-            "supportive_information": supportive_information
+            "supportive_information": info_string
         })
-        return answer
+        return supportive_information, answer
