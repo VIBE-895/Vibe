@@ -26,8 +26,11 @@ def write_output(path, content):
     except Exception as e:
         print(f"An error occurred while writing to the file: {e}")
 
-def visualize_audio(audio_path):
-    pass
+def is_pdf(file_path):
+    return file_path.lower().endswith('.pdf')
+
+def is_image(file_path):
+    return file_path.lower().endswith('.jpg') or file_path.lower().endswith('.png') or file_path.lower().endswith('.jpeg')
 
 def gen_id():
     return str(uuid.uuid4())

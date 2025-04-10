@@ -136,7 +136,7 @@ class LlamaWorker:
         summary_rag = chain.invoke({"text": self.documents})
         return summary_rag
 
-    def summarize(self, map_reduce=False, rag=False):
+    def summarize(self, map_reduce=False):
         """
         Extract key information, knowledge points, key tasks, and time points from the documents.
 
@@ -145,6 +145,8 @@ class LlamaWorker:
         """
         if not self.documents:
             return "No documents to extract information from."
+
+        rag = len(self.supportive_documents) > 0
 
         if rag:
             summary = self.summarize_with_rag()

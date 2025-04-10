@@ -67,6 +67,41 @@ def summarize():
         logging.error(f"Unexpected error: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
 
+@app.route('/transcribe', methods=['POST'])
+def transcribe():
+    try:
+        start_time = time.time()
+        data = request.get_json()
+        if "file" not in data:
+            return jsonify({"error": "Missing file in request"}), 400
+        audio = data["file"]
+        speech_to_text_service = SpeechToTextService()
+        transcript = speech_to_text_service.speech_to_text(audio)
+        end_time = time.time()
+        s2t_time = end_time - start_time
+        return jsonify({"data": transcript, "processing_time": s2t_time}), 200
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
+        return jsonify({"error": "Fail to transcribe"}), 500
+
+@app.route('/summarize/v2', methods=['POST'])
+def summarize_v2():
+    try:
+        start_time = time.time()
+        data = request.get_json()
+        if "text" not in data:
+            return jsonify({"error": "Missing text in request"}), 400
+        text = data["text"]
+        supportive_documents = data.get("supportive_documents", [])
+        text_summary_service = TextSummaryService()
+        summary = text_summary_service.summarize_text(text, supportive_documents)
+        end_time = time.time()
+        processing_time = end_time - start_time
+        return jsonify({"data": summary, "processing_time": processing_time}), 200
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
+        return jsonify({"error": "Fail to summarize"}), 500
+
 @app.route('/upload', methods=['POST'])
 def upload():
     try:

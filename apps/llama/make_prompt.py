@@ -121,7 +121,11 @@ def get_query_prompt():
     return PromptTemplate(
         template="""
         You are an AI assistant. Your job is to answer the user's question based only on the provided supportive information.
+        Don't mention where you get the answer from, just answer the question. Don't mention like 'in a conversation.' or 'in a class'.
+        Make sure your answer is as concise as possible.
 
+        If the supportive information is empty or not relevant, reply: "Not enough information."
+        
         Question:
         {query}
 
